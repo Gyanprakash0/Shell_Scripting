@@ -1,0 +1,170 @@
+#!/bin/bash
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root!" 
+  exit 1
+fi
+
+function memory_usage() {
+    echo -e "\nMemory Usage:"
+    free -h
+    echo -e "\nMemory Graph:"
+    total_mem=$(free -m | grep Mem | awk '{print $2}')
+    used_mem=$(free -m | grep Mem | awk '{print $3}')
+    mem_percentage=$((100 * $used_mem / $total_mem))
+    draw_bar $mem_percentage "\033[1;32m" "RAM"
+}
+
+function cpu_usage() {
+    echo -e "\nCPU Usage:"
+    top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}'
+    echo -e "\nCPU Graph:"
+    cpu_percent=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
+    draw_bar $cpu_percent "\033[1;33m" "CPU"
+}
+
+function disk_usage() {
+    echo -e "\nDisk Usage:"
+    df -h
+    echo -e "\nDisk Graph:"
+    disk_usage=$(df -h | grep -E '^/dev' | awk '{ print $5 }' | sed 's/%//')
+    draw_bar $disk_usage "\033[1;34m" "Disk"
+}
+
+function installed_packages() {
+    echo -e "\nInstalled Packages:"
+    if command -v dpkg &>/dev/null; then
+        dpkg-query -l
+    elif command -v rpm &>/dev/null; then
+        rpm -qa
+    fi
+}
+
+draw_bar() {
+    local length=$1
+    local color=$2
+    local label=$3
+    local max_length=50
+    local progress=$(($length * $max_length / 100))
+    printf "%-20s [" "$label"
+    for i in $(seq 1 $progress); do printf "$color#"; done
+    for i in $(seq $progress $max_length); do printf " "; done
+    printf "] $length%%\n"
+}
+
+function system_uptime() {
+    echo -e "\nSystem Uptime and Load Averages:"
+    uptime
+}
+
+function top_processes() {
+    echo -e "\nTop 5 Processes by Memory Usage:"
+    ps aux --sort=-%mem | head -n 6
+}
+
+function top_cpu_processes() {
+    echo -e "\nTop 5 Processes by CPU Usage:"
+    ps aux --sort=-%cpu | head -n 6
+}
+
+function system_info() {
+    echo -e "\nSystem Information:"
+    uname -a
+    echo "Architecture: $(uname -m)"
+    echo "Hostname: $(hostname)"
+    echo "Kernel Version: $(uname -r)"
+}
+
+system_info
+memory_usage
+cpu_usage
+disk_usage
+installed_packages
+system_uptime
+top_processes
+top_cpu_processes
+#!/bin/bash
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root!" 
+  exit 1
+fi
+
+function memory_usage() {
+    echo -e "\nMemory Usage:"
+    free -h
+    echo -e "\nMemory Graph:"
+    total_mem=$(free -m | grep Mem | awk '{print $2}')
+    used_mem=$(free -m | grep Mem | awk '{print $3}')
+    mem_percentage=$((100 * $used_mem / $total_mem))
+    draw_bar $mem_percentage "\033[1;32m" "RAM"
+}
+
+function cpu_usage() {
+    echo -e "\nCPU Usage:"
+    top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}'
+    echo -e "\nCPU Graph:"
+    cpu_percent=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
+    draw_bar $cpu_percent "\033[1;33m" "CPU"
+}
+
+function disk_usage() {
+    echo -e "\nDisk Usage:"
+    df -h
+    echo -e "\nDisk Graph:"
+    disk_usage=$(df -h | grep -E '^/dev' | awk '{ print $5 }' | sed 's/%//')
+    draw_bar $disk_usage "\033[1;34m" "Disk"
+}
+
+function installed_packages() {
+    echo -e "\nInstalled Packages:"
+    if command -v dpkg &>/dev/null; then
+        dpkg-query -l
+    elif command -v rpm &>/dev/null; then
+        rpm -qa
+    fi
+}
+
+draw_bar() {
+    local length=$1
+    local color=$2
+    local label=$3
+    local max_length=50
+    local progress=$(($length * $max_length / 100))
+    printf "%-20s [" "$label"
+    for i in $(seq 1 $progress); do printf "$color#"; done
+    for i in $(seq $progress $max_length); do printf " "; done
+    printf "] $length%%\n"
+}
+
+function system_uptime() {
+    echo -e "\nSystem Uptime and Load Averages:"
+    uptime
+}
+
+function top_processes() {
+    echo -e "\nTop 5 Processes by Memory Usage:"
+    ps aux --sort=-%mem | head -n 6
+}
+
+function top_cpu_processes() {
+    echo -e "\nTop 5 Processes by CPU Usage:"
+    ps aux --sort=-%cpu | head -n 6
+}
+
+function system_info() {
+    echo -e "\nSystem Information:"
+    uname -a
+    echo "Architecture: $(uname -m)"
+    echo "Hostname: $(hostname)"
+    echo "Kernel Version: $(uname -r)"
+}
+
+system_info
+memory_usage
+cpu_usage
+disk_usage
+installed_packages
+system_uptime
+top_processes
+top_cpu_processes
